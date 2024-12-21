@@ -1,12 +1,14 @@
 import '@shgk/vue-course-ui/meetups/style.css'
 import meetupsJson from './api/meetups.json'
-import { defineComponent, createApp } from 'vue/dist/vue.esm-browser.js'
+import { defineComponent, createApp, reactive } from 'vue/dist/vue.esm-browser.js'
 
 const App = defineComponent({
   name: 'App',
 
   setup() {
-    const meetups = meetupsJson
+    const meetups = reactive(meetupsJson)
+
+    const view = reactive({view: 'list'})
 
     function formatAsIsoDate(timestamp) {
       return new Date(timestamp).toISOString()
@@ -22,6 +24,7 @@ const App = defineComponent({
 
     return {
       meetups,
+      view,
       formatAsIsoDate,
       formatAsLocalDate,
     }
