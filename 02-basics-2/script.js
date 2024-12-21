@@ -1,6 +1,5 @@
 import '@shgk/vue-course-ui/meetups/style.css'
-import meetupsJson from './api/meetups.json'
-import { defineComponent, createApp, ref, watchEffect, computed } from 'vue/dist/vue.esm-browser.js'
+import { defineComponent, createApp, ref, computed, onMounted } from 'vue/dist/vue.esm-browser.js'
 
 function formatAsIsoDate(timestamp) {
   return new Date(timestamp).toISOString()
@@ -14,11 +13,20 @@ function formatAsLocalDate(timestamp) {
   })
 }
 
+async function fetchMeetups() {
+  const response = await fetch('https://course-vue.javascript.ru/api/meetups');
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message)
+  }
+  return result
+}
+
 const App = defineComponent({
   name: 'App',
 
   setup() {
-    const meetups = ref(meetupsJson)
+    const meetups = ref(null)
     const view = ref('list')
     const filters = ref({
       date: 'all',
@@ -46,6 +54,10 @@ const App = defineComponent({
       return meetups.value.filter((meetup) => dateFilter(meetup) && participationFilter(meetup) && searchFilter(meetup))
     })
 
+    onMounted(async () => {
+      meetups.value = await fetchMeetups();
+    })
+
     return {
       meetups,
       view,
@@ -69,8 +81,7 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="all"
-                :checked="filters.date ==='all'"
-                @change="filters.date = $event.target.value"
+                v-model="filters.date"
               />
               <label for="radio-buttons_date_all" class="radio-group__label">Все</label>
             </div>
@@ -81,8 +92,7 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="past"
-                :checked="filters.date ==='past'"
-                @change="filters.date = $event.target.value"
+                v-model="filters.date"
               />
               <label for="radio-buttons_date_future" class="radio-group__label">Прошедшие</label>
             </div>
@@ -93,8 +103,7 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="future"
-                :checked="filters.date ==='future'"
-                @change="filters.date = $event.target.value"
+                v-model="filters.date"
               />
               <label for="radio-buttons_date_past" class="radio-group__label">Ожидаемые</label>
             </div>
@@ -117,8 +126,7 @@ const App = defineComponent({
                 aria-label="Поиск"
                 placeholder="Поиск"
                 type="search"
-                :value="filters.query"
-                @input="filters.query = $event.target.value"
+                v-model.trim.lazy="filters.query"
               />
             </div>
           </div>
@@ -163,44 +171,53 @@ const App = defineComponent({
         </div>
       </div>
 
-      <ul v-if="view === 'list'" class="meetups-list">
-        <li v-for="meetup in filteredMeetups" :key="meetup.id" class="meetups-list__item">
-          <a :href="\`/meetups/\${meetup.id}\`" class="meetups-list__item-link" tabindex="0">
-            <article class="meetup-card card">
-              <div class="card__col">
-                <div class="card__cover" :style="meetup.image && { '--bg-url': \`url('\${meetup.image}')\` }">
-                  <header>{{ meetup.title }}</header>
-                </div>
-              </div>
-              <div class="card__col">
-                <div class="card__content">
-                  <span v-if="meetup.organizing" class="meetup-card__badge badge badge--success">Организую</span>
-                  <span v-else-if="meetup.attending" class="meetup-card__badge badge badge--primary">Участвую</span>
-                  <span v-if="false">{{ meetup.notAFunction('Я никогда не буду вызыван') }}</span>
-                  <ul class="meetup-info">
-                    <li class="meetup-info__item">
-                      <img class="meetup-info__icon icon" src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-user.svg" alt=""/>
-                      {{ meetup.organizer }}
-                    </li>
-                    <li class="meetup-info__item">
-                      <img class="meetup-info__icon icon" src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-map.svg" alt=""/>
-                      {{ meetup.place }}
-                    </li>
-                    <li class="meetup-info__item">
-                      <img class="meetup-info__icon icon" src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-cal-lg.svg" alt=""/>
-                      <time :datetime="formatAsIsoDate(meetup.date)">{{ formatAsLocalDate(meetup.date) }}</time>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </article>
-          </a>
-        </li>
-      </ul>
+      <template v-if="meetups">
+        <template v-if="filteredMeetups.length">
+          <ul v-if="view === 'list'" class="meetups-list">
+            <li v-for="meetup in filteredMeetups" :key="meetup.id" class="meetups-list__item">
+              <a :href="\`/meetups/\${meetup.id}\`" class="meetups-list__item-link" tabindex="0">
+                <article class="meetup-card card">
+                  <div class="card__col">
+                    <div class="card__cover" :style="meetup.image && { '--bg-url': \`url('\${meetup.image}')\` }">
+                      <header>{{ meetup.title }}</header>
+                    </div>
+                  </div>
+                  <div class="card__col">
+                    <div class="card__content">
+                      <span v-if="meetup.organizing" class="meetup-card__badge badge badge--success">Организую</span>
+                      <span v-else-if="meetup.attending" class="meetup-card__badge badge badge--primary">Участвую</span>
+                      <span v-if="false">{{ meetup.notAFunction('Я никогда не буду вызыван') }}</span>
+                      <ul class="meetup-info">
+                        <li class="meetup-info__item">
+                          <img class="meetup-info__icon icon"
+                               src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-user.svg"
+                               alt=""/>
+                          {{ meetup.organizer }}
+                        </li>
+                        <li class="meetup-info__item">
+                          <img class="meetup-info__icon icon"
+                               src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-map.svg" alt=""/>
+                          {{ meetup.place }}
+                        </li>
+                        <li class="meetup-info__item">
+                          <img class="meetup-info__icon icon"
+                               src="../node_modules/@shgk/vue-course-ui/dist/meetups/assets/icons/icon-cal-lg.svg"
+                               alt=""/>
+                          <time :datetime="formatAsIsoDate(meetup.date)">{{ formatAsLocalDate(meetup.date) }}</time>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </a>
+            </li>
+          </ul>
+          <div v-else-if="view === 'calendar'" class="meetups-calendar">Календарь</div>
+        </template>
+      </template>
+      <div v-else class="alert">Митапов по заданным условиям не найдено...</div>
+      <div v-else class="alert">Загрузка...</div>
 
-      <div v-else-if="view === 'calendar'" class="meetups-calendar">Календарь</div>
-      <div class="alert">Митапов по заданным условиям не найдено...</div>
-      <div class="alert">Загрузка...</div>
     </div>
   `,
 })
