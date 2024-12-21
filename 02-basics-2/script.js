@@ -1,14 +1,14 @@
 import '@shgk/vue-course-ui/meetups/style.css'
 import meetupsJson from './api/meetups.json'
-import { defineComponent, createApp, reactive } from 'vue/dist/vue.esm-browser.js'
+import { defineComponent, createApp, reactive, ref } from 'vue/dist/vue.esm-browser.js'
 
 const App = defineComponent({
   name: 'App',
 
   setup() {
-    const meetups = reactive(meetupsJson)
+    const meetups = ref(meetupsJson)
 
-    const view = reactive({view: 'list'})
+    const view = ref('list')
 
     function formatAsIsoDate(timestamp) {
       return new Date(timestamp).toISOString()
@@ -29,6 +29,7 @@ const App = defineComponent({
       formatAsLocalDate,
     }
   },
+
 
   template: `
     <div class="container">
@@ -91,10 +92,12 @@ const App = defineComponent({
             <div class="button-group" role="radiogroup" aria-label="Расположение митапов">
               <button
                 type="button"
-                class="button-group__button button-group__button--active"
+                class="button-group__button"
+                :class="{ 'button-group__button--active': view === 'list' }"
                 role="radio"
                 aria-label="Список"
                 aria-checked="true"
+                @click="view ='list'"
               >
                 <svg fill="none" height="28" viewBox="0 0 28 28" width="28" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -107,9 +110,11 @@ const App = defineComponent({
               <button
                 type="button"
                 class="button-group__button"
+                :class="{ 'button-group__button--active': view === 'calendar' }"
                 role="radio"
                 aria-label="Календарь"
                 aria-checked="false"
+                @click="view ='calendar'"
               >
                 <svg height="22" viewBox="0 0 20 22" width="20" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -124,7 +129,7 @@ const App = defineComponent({
         </div>
       </div>
 
-      <ul class="meetups-list">
+      <ul v-if="view === 'list'" class="meetups-list">
         <li v-for="meetup in meetups" :key="meetup.id" class="meetups-list__item">
           <a :href="\`/meetups/\${meetup.id}\`" class="meetups-list__item-link" tabindex="0">
             <article class="meetup-card card">
@@ -159,7 +164,7 @@ const App = defineComponent({
         </li>
       </ul>
 
-      <div class="meetups-calendar">Календарь</div>
+      <div v-else-if="view === 'calendar'" class="meetups-calendar">Календарь</div>
       <div class="alert">Митапов по заданным условиям не найдено...</div>
       <div class="alert">Загрузка...</div>
     </div>
