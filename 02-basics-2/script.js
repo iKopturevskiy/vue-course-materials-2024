@@ -1,30 +1,56 @@
 import '@shgk/vue-course-ui/meetups/style.css'
 import meetupsJson from './api/meetups.json'
-import { defineComponent, createApp, reactive, ref } from 'vue/dist/vue.esm-browser.js'
+import { defineComponent, createApp, ref, watchEffect, computed } from 'vue/dist/vue.esm-browser.js'
+
+function formatAsIsoDate(timestamp) {
+  return new Date(timestamp).toISOString()
+}
+
+function formatAsLocalDate(timestamp) {
+  return new Date(timestamp).toLocaleString(navigator.language, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
 const App = defineComponent({
   name: 'App',
 
   setup() {
     const meetups = ref(meetupsJson)
-
     const view = ref('list')
+    const filters = ref({
+      date: 'all',
+      participation: 'all',
+      query: '',
+    })
 
-    function formatAsIsoDate(timestamp) {
-      return new Date(timestamp).toISOString()
-    }
+    const filteredMeetups = computed(() => {
+      const dateFilter = (meetup) =>
+        filters.value.date === 'all' ||
+        (filters.value.date === 'past' && new Date(meetup.date) <= new Date()) ||
+        (filters.value.date === 'future' && new Date(meetup.date) > new Date())
 
-    function formatAsLocalDate(timestamp) {
-      return new Date(timestamp).toLocaleString(navigator.language, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    }
+      const participationFilter = (meetup) =>
+        filters.value.participation === 'all' ||
+        (filters.value.participation === 'organizing' && meetup.organizing) ||
+        (filters.value.participation === 'attending' && meetup.attending)
+
+      const searchFilter = (meetup) =>
+        [meetup.title, meetup.description, meetup.place, meetup.organizer]
+          .join(' ')
+          .toLowerCase()
+          .includes(filters.value.query.toLowerCase())
+
+      return meetups.value.filter((meetup) => dateFilter(meetup) && participationFilter(meetup) && searchFilter(meetup))
+    })
 
     return {
       meetups,
       view,
+      filteredMeetups,
+      filters,
       formatAsIsoDate,
       formatAsLocalDate,
     }
@@ -43,6 +69,8 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="all"
+                :checked="filters.date ==='all'"
+                @change="filters.date = $event.target.value"
               />
               <label for="radio-buttons_date_all" class="radio-group__label">Все</label>
             </div>
@@ -53,6 +81,8 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="past"
+                :checked="filters.date ==='past'"
+                @change="filters.date = $event.target.value"
               />
               <label for="radio-buttons_date_future" class="radio-group__label">Прошедшие</label>
             </div>
@@ -63,6 +93,8 @@ const App = defineComponent({
                 type="radio"
                 name="date"
                 value="future"
+                :checked="filters.date ==='future'"
+                @change="filters.date = $event.target.value"
               />
               <label for="radio-buttons_date_past" class="radio-group__label">Ожидаемые</label>
             </div>
@@ -85,6 +117,8 @@ const App = defineComponent({
                 aria-label="Поиск"
                 placeholder="Поиск"
                 type="search"
+                :value="filters.query"
+                @input="filters.query = $event.target.value"
               />
             </div>
           </div>
@@ -130,7 +164,7 @@ const App = defineComponent({
       </div>
 
       <ul v-if="view === 'list'" class="meetups-list">
-        <li v-for="meetup in meetups" :key="meetup.id" class="meetups-list__item">
+        <li v-for="meetup in filteredMeetups" :key="meetup.id" class="meetups-list__item">
           <a :href="\`/meetups/\${meetup.id}\`" class="meetups-list__item-link" tabindex="0">
             <article class="meetup-card card">
               <div class="card__col">
