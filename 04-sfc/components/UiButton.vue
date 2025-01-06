@@ -1,3 +1,40 @@
+<script>
+import { computed } from 'vue'
+
+const buttonKindClasses = {
+  primary: 'button--primary',
+  secondary: 'button--secondary',
+  danger: 'button--danger',
+}
+
+export default {
+  name: 'UiButton',
+
+  props: {
+    kind: {
+      type: String,
+      validator: (value) => Object.keys(buttonKindClasses).includes(value),
+      default: 'secondary',
+    },
+  },
+
+  setup(props) {
+    const kindClass = computed(() => buttonKindClasses[props.kind])
+    return {
+      kindClass,
+    }
+  },
+}
+
+</script>
+
+<template>
+  <button class="button" :class="kindClass">
+    <slot></slot>
+  </button>
+</template>
+
+<style scoped >
 .button {
   display: inline-block;
   padding: 10px 24px;
@@ -51,3 +88,5 @@
 .button--danger:hover {
   border-color: var(--red-light);
 }
+
+</style>

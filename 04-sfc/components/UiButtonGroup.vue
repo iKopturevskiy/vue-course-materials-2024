@@ -1,6 +1,7 @@
 <script>
 import { defineComponent } from 'vue'
 
+
 export default defineComponent({
   name: 'UiButtonGroup',
 
@@ -10,6 +11,11 @@ export default defineComponent({
       required: true,
       validator: (value) => ['list', 'calendar'].includes(value),
     },
+
+    color: {
+      type: String,
+      default: 'var(--blue)',
+    }
   },
 
   emits: ['update:view'],
@@ -17,7 +23,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="button-group" role="radiogroup" aria-label="Расположение митапов">
+  <div
+    class="button-group"
+    role="radiogroup"
+    aria-label="Расположение митапов"
+  >
     <button
       type="button"
       class="button-group__button"
@@ -55,7 +65,7 @@ export default defineComponent({
   </div>
 </template>
 
-<style>
+<style scoped >
 /* _button-group.css */
 .button-group {
   display: inline-flex;
@@ -67,11 +77,11 @@ export default defineComponent({
 /* _button-group.css */
 .button-group__button {
   background-color: var(--white);
-  border: 2px solid var(--blue);
+  border: 2px solid v-bind(color);
   border-left: none;
   height: 44px;
   padding: 0 8px;
-  color: var(--blue);
+  color: v-bind(color);
   font-weight: 400;
   font-size: 20px;
   font-family: inherit;
@@ -88,7 +98,7 @@ export default defineComponent({
 
 .button-group__button:first-child {
   border-radius: 22px 0 0 22px;
-  border-left: 2px solid var(--blue);
+  border-left: 2px solid v-bind(color);
   padding-left: 10px;
   padding-right: 6px;
 }
@@ -100,12 +110,12 @@ export default defineComponent({
 
 .button-group__button:hover,
 .button-group__button--active {
-  background-color: var(--blue);
+  background-color: v-bind(color);
   color: var(--white);
 }
 
 .button-group__button svg {
-  fill: var(--blue);
+  fill: v-bind(color);
 }
 
 .button-group__button:hover svg,
