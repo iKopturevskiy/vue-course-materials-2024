@@ -1,4 +1,4 @@
-<script>
+  <script>
 import { defineComponent } from 'vue'
 
 const generateId = () => Math.random().toString(36).slice(2, 9)
@@ -19,6 +19,9 @@ export default defineComponent({
       type: String,
       default: () => `ui-radio-group-${generateId()}`,
     },
+    buttonClasses: {
+      type: [String, Array, Object],
+    },
   },
 
   setup(props, { emit }) {
@@ -34,23 +37,23 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="radio-group">
-    <div v-for="option in options" :key="option.value" class="radio-group__button">
+  <div :class="$style['radio-group']">
+    <div v-for="option in options" :key="option.value" :class="$style['radio-group__button']">
       <input
         :id="`radio-group_${name}_${option.value}`"
-        class="radio-group__input"
+        :class="$style['radio-group__input']"
         type="radio"
         :name
         :value="option.value"
         :checked="option.value === modelValue"
         @change="handleChange(option.value)"
       />
-      <label :for="`radio-group_${name}_${option.value}`" class="radio-group__label">{{ option.label }}</label>
+      <label :for="`radio-group_${name}_${option.value}`" :class="[$style['radio-group__label'], buttonClasses]">{{ option.label }}</label>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style module>
 .radio-group {
   display: flex;
   flex-direction: row;

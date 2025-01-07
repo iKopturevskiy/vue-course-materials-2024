@@ -1,5 +1,5 @@
 <script>
-import { computed } from 'vue'
+import { computed, useCssModule } from 'vue'
 
 const buttonKindClasses = {
   primary: 'button--primary',
@@ -19,7 +19,8 @@ export default {
   },
 
   setup(props) {
-    const kindClass = computed(() => buttonKindClasses[props.kind])
+    const style = useCssModule()
+    const kindClass = computed(() => style[buttonKindClasses[props.kind]])
     return {
       kindClass,
     }
@@ -29,12 +30,12 @@ export default {
 </script>
 
 <template>
-  <button class="button" :class="kindClass">
+  <button :class="[$style.button, kindClass]">
     <slot></slot>
   </button>
 </template>
 
-<style scoped >
+<style module>
 .button {
   display: inline-block;
   padding: 10px 24px;

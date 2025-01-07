@@ -3,7 +3,7 @@ import {ref} from 'vue'
 import UiContainer from './components/UiContainer.vue'
 import UiButton from './components/UiButton.vue'
 import UiButtonGroup from "./components/UiButtonGroup.vue";
-import UiRadioGroup from "../05-ts/components/UiRadioGroup.vue";
+import UiRadioGroup from "../04-sfc/components/UiRadioGroup.vue";
 
 export default {
   name: 'App',
@@ -17,8 +17,16 @@ export default {
 
   setup () {
     const view = ref('list')
+    const selected = ref('1')
+    const options = ref([
+      { label: 'One', value: '1' },
+      { label: 'Two', value: '2' },
+      { label: 'Three', value: '3' }
+    ])
     return {
-      view
+      view,
+      selected,
+      options
     }
   },
 }
@@ -43,14 +51,15 @@ export default {
 
         <h2>UiRadioGroup</h2>
         <p>
-          <UiRadioGroup
-            v-model="selected"
-            :options="[{ label: 'One', value: '1' }, { label: 'Two', value: '2' }]" />
+          <UiRadioGroup :button-classes="$style['green-button']" v-model="selected" :options/>
         </p>
       </UiContainer>
     </div>
   </div>
 </template>
 
-<style scoped >
+<style module>
+.green-button {
+  color: var(--green);
+}
 </style>
