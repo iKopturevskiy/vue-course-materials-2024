@@ -1,31 +1,24 @@
 <script>
-import { computed, useCssModule } from 'vue'
-
 const buttonKindClasses = {
   primary: 'button--primary',
   secondary: 'button--secondary',
   danger: 'button--danger',
 }
+</script>
 
-export default {
-  name: 'UiButton',
+<script setup>
+import { computed, useCssModule } from 'vue'
 
-  props: {
-    kind: {
-      type: String,
-      validator: (value) => Object.keys(buttonKindClasses).includes(value),
-      default: 'secondary',
-    },
-  },
+const props = defineProps({
+  kind: {
+    type: String,
+    validator: (value) => Object.keys(buttonKindClasses).includes(value),
+    default: 'secondary',
+  }
+})
 
-  setup(props) {
-    const style = useCssModule()
-    const kindClass = computed(() => style[buttonKindClasses[props.kind]])
-    return {
-      kindClass,
-    }
-  },
-}
+const style = useCssModule()
+const kindClass = computed(() => style[buttonKindClasses[props.kind]])
 
 </script>
 

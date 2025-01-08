@@ -1,39 +1,31 @@
-  <script>
-import { defineComponent } from 'vue'
-
+<script>
 const generateId = () => Math.random().toString(36).slice(2, 9)
+</script>
 
-export default defineComponent({
-  name: 'UiRadioGroup',
-
-  props: {
-    modelValue: {
-      type: String,
-      required: true,
-    },
-    options: {
-      type: Array,
-      required: true,
-    },
-    name: {
-      type: String,
-      default: () => `ui-radio-group-${generateId()}`,
-    },
-    buttonClasses: {
-      type: [String, Array, Object],
-    },
+<script setup>
+const props = defineProps({
+  modelValue: {
+    type: String,
+    required: true,
   },
-
-  setup(props, { emit }) {
-    function handleChange(value) {
-      emit('update:modelValue', value)
-    }
-
-    return {
-      handleChange,
-    }
+  options: {
+    type: Array,
+    required: true,
+  },
+  name: {
+    type: String,
+    default: () => `ui-radio-group-${generateId()}`,
+  },
+  buttonClasses: {
+    type: [String, Array, Object],
   },
 })
+
+const emit = defineEmits(['update:modelValue'])
+
+function handleChange(value) {
+  emit('update:modelValue', value)
+}
 </script>
 
 <template>
